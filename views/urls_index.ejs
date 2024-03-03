@@ -42,7 +42,7 @@
               <td><%= id %></td>
               <td><%= urls[id] %></td>
               <td><!-- In our urls_index.ejs template, add a form element for each shortened URL. The form should use the POST method: -->
-                <form method="POST" action="/urls/9sm5xK/delete">
+                <form method="POST" action="/urls/<%= id%>/delete">
                   <button type="submit" class = "delete-button">Delete</button>
                 </form>
     </td>
