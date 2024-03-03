@@ -16,7 +16,7 @@ function generateRandomString() {
     return randomString;
 }
 
-console.log(generateRandomString());
+// console.log(generateRandomString());
 
 
 
@@ -61,8 +61,29 @@ app.get("/urls/:id", (req, res) => {
   
 });
 
+// Redirect any request to "/u/:id" to its longURL
+app.get("/u/:id", (req, res) => {
+  // const longURL = ...
+  res.redirect(longURL);
+});
+
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  // console.log(req.body); // Log the POST request body to the console
+  // res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  
+  //Update your express server so that the id-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
+  
+  //to create a 6 digit id
+  const shortURL = generateRandomString();
+  //to extract the longURL from the request body
+  const longURL = req.body.longURL;
+
+  //to add the id-longURL pair to urlDatabase object
+  //set value as longURL
+  urlDatabase[shortURL] = longURL;
+
+  //Update your express server so that the id-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
+  //to redirect the client to the page with details regarding the new URL
+  res.redirect(`/urls/${shortURL}`);
 });
 
