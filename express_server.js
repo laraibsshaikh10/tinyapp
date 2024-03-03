@@ -4,7 +4,19 @@ const PORT = 8080; // default port 8080
 
 
 app.use(express.urlencoded({ extended: true }));
-function generateRandomString() {}
+function generateRandomString() {
+  let randomString = "";
+  //to select from a list of characters
+  const stringCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  //to ensure the generated string is 6 characters long
+  for (let i = 0; i < 6; i++) {
+    const randomIndex =  Math.floor(Math.random() * stringCharacters.length);
+    randomString += stringCharacters[randomIndex];
+    }
+    return randomString;
+}
+
+console.log(generateRandomString());
 
 
 
