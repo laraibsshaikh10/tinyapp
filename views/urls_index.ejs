@@ -30,6 +30,10 @@
           <tr>
             <th scope="col">Short URL ID</th>
             <th scope="col">Long URL</th>
+            <!-- new column for the form buttons -->
+            <th scope="col">Action</th>
+
+
           </tr>
         </thead>
         <tbody>
@@ -37,6 +41,11 @@
             <tr>
               <td><%= id %></td>
               <td><%= urls[id] %></td>
+              <td><!-- In our urls_index.ejs template, add a form element for each shortened URL. The form should use the POST method: -->
+                <form method="POST" action="/urls/9sm5xK/delete">
+                  <button type="submit" class = "delete-button">Delete</button>
+                </form>
+    </td>
             </tr>
           <% } %>
         </tbody>

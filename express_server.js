@@ -87,3 +87,19 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+//Add a POST route that removes a URL resource: POST /urls/:id/delete
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  //to see if url is already present in the database
+  if (urlDatabase[id]) {
+    //delete that url from the database
+    delete urlDatabase[id];
+    //redirect to the urls index page
+    res.redirect("/urls");
+  } else {
+    //if url is not in the database, send a 400 error
+    res.status(400).send("URL does not exist");
+  }
+});
+
+
