@@ -148,7 +148,7 @@ app.post("/login", (req, res) => {
 //logout: Implement the /logout endpoint so that it clears the username cookie and redirects the user back to the /urls page.
 app.post("/logout", (req, res) => {
   //clear username cookie
-  res.clearCookie("username", { path: '/admin' });
+  res.clearCookie("username");
   //redirect the client back to urls index page
   res.redirect("/urls");
 })
