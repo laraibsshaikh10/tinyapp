@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-
+const cookieParser = require("cookie-parser");
 
 
 
@@ -19,7 +19,17 @@ function generateRandomString() {
 }
 
 // console.log(generateRandomString());
-
+//using it as middleware
+app.use(cookieParser());
+//middleware to pass username to all views
+//Pass in the username to all views that include the _header.ejs partial and modify the _header.ejs partial to display the passed-in username next to the form.
+app.use((req, res, next) => {
+  //checks if request contains a cookie called username
+  //if cookie exists, it assigns username cookie to res.locals.username otherwise assigns it a null value
+  res.locals.username = req.cookies.username || null;
+  //next is a callback function to call on the next middleware function
+  next();
+})
 
 
 //Set ejs as the view engine.
@@ -47,7 +57,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
 

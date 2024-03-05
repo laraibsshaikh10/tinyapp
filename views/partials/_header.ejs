@@ -18,6 +18,10 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <!--to display username once logged in-->
+    <% if (username) { %>
+      <span>Logged in as:, <%= username %></span>
+    <% } %>
     <!--In the _header.ejs partial of your app, create a <form> that POSTs to /login.--> 
       <form method= "POST" class = "form-inline login information" action= "/login">
         <!--Username-->
