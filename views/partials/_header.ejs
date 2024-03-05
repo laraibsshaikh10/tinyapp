@@ -18,5 +18,26 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-  </nav>
+    <!--In the _header.ejs partial of your app, create a <form> that POSTs to /login.--> 
+      <form method= "POST" class = "form-inline login information" action= "/login">
+        <!--Username-->
+        <input
+        class="form-control"
+        type="text"
+        name="Username"
+        placeholder="Username" required
+        style="width: 300px; margin: 1em" 
+        />
+        <!--password-->
+        <!-- <input
+        class="form-control"
+        type="password"
+        name="Password"
+        placeholder="Password" required
+        style="width: 300px; margin: 1em" 
+        /> -->
+        <button type="submit" class = "submit-button">Login</button>
+
+      </form>
+  </nav>  
 </header>

@@ -3,6 +3,8 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 
+
+
 app.use(express.urlencoded({ extended: true }));
 function generateRandomString() {
   let randomString = "";
@@ -121,3 +123,14 @@ app.post("/urls/:id", (req, res) => {
   }
 });
 
+
+//Add an endpoint to handle a POST to /login in your Express server.
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+
+  //set username cookie with a value submitted in the request body
+  res.cookie("username", username);
+
+  //redirect the client back to urls index page
+  res.redirect("/urls");
+})
