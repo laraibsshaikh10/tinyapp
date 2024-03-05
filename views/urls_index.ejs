@@ -45,7 +45,10 @@
                 <form method="POST" action="/urls/<%= id%>/delete">
                   <button type="submit" class = "delete-button">Delete</button>
                 </form>
-    </td>
+              </td>
+              <td> <!--Add an Edit column to the table on the urls_index page-->
+                <a href="/urls/<%= id %>">Edit</a>  
+              </td>
             </tr>
           <% } %>
         </tbody>

@@ -89,6 +89,7 @@ app.post("/urls", (req, res) => {
 
 //Add a POST route that removes a URL resource: POST /urls/:id/delete
 app.post("/urls/:id/delete", (req, res) => {
+  //to get shortened url id from route parameter
   const id = req.params.id;
   //to see if url is already present in the database
   if (urlDatabase[id]) {
@@ -102,4 +103,21 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
+//Add a POST route that updates a URL resource; POST /urls/:id and have it update the value of your stored long URL based on the new value in req.body. Finally, redirect the client back to /urls.
+app.post("/urls/:id", (req, res) => {
+  //to get shortened url id from route parameter
+  const id = req.params.id;
+  //to get updated long url from request body
+  const updatedURL = req.body.updatedURL;
+  //to see if url is already present in the database
+  if (urls[id]) {
+    //updated stored long url
+    urls[id] = updatedURL;
+    //redirect the client to the urls index page
+    res.redirect("/urls");
+  } else {
+    //if shortened url is not in the database, send a 400 error
+    res.status(400).send("URL does not exist");
+  }
+});
 

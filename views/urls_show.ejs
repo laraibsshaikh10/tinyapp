@@ -18,6 +18,23 @@
 
       <!--Include the header partial inside urls_index.ejs and urls_show.ejs. Make sure this is included inside the top of the <body> -->
   <%- include('partials/_header') %>
+
+  <main style="margin: 1em;">
+    <h3>Updated long URL</h3>
+    <form class="form-updated URL" action="/urls/<%= id %>/update" method="POST">
+      <div class="form-group updatedURL">
+        <label for="updatedURL">Update Long URL:</label>
+        <input
+          class="form-control"
+          type="text"
+          name="updatedURL"
+          placeholder="http://" required
+          style="width: 300px; margin: 1em" 
+        />
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+    </form>
+  </main>
   
     <div class="card text-center">
       <div class="card-header"></div>
