@@ -21,7 +21,10 @@
     <!--to display username once logged in-->
     <% if (username) { %>
       <span>Logged in as:, <%= username %></span>
-    <% } %>
+      <form method="POST" class = "logout-form" action= "/logout">
+        <button type="submit" class="logout-button">Logout</button>
+      </form>
+    <% } else { %>
     <!--In the _header.ejs partial of your app, create a <form> that POSTs to /login.--> 
       <form method= "POST" class = "form-inline login information" action= "/login">
         <!--Username-->
@@ -43,5 +46,6 @@
         <button type="submit" class = "submit-button">Login</button>
 
       </form>
+     <% } %>
   </nav>  
 </header>
