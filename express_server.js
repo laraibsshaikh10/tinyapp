@@ -79,6 +79,11 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+//Create a GET /register endpoint, which returns the template you just created.
+app.get("/register", (req, res) => {
+  res.render("register");
+})
+
 app.post("/urls", (req, res) => {
   // console.log(req.body); // Log the POST request body to the console
   // res.send("Ok"); // Respond with 'Ok' (we will replace this)
