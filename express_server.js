@@ -196,11 +196,17 @@ app.post("/register", (req, res) => {
   //to extract email and password from request body
   const {email, password} = req.body;
 
+  //for invalid email/password and to make sure email has proper format
+  const emailFormatRegex = /^\S+@\S+\.\S+$/;
+  if (!email || !password || !emailFormatRegex) {
+    return res.status(400).send("Invalid email or password.");
+  } 
+  
   //to see if email is already registered
   for (const userId in users) {
     if (users[userId].email === email) {
-      res.status(400).send("Account exists already.")
-      return;
+      return res.status(400).send("The user account already exists.");
+    
     }
   }
   //to generate a six-character unique id for our new user
