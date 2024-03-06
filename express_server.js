@@ -3,7 +3,19 @@ const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require("cookie-parser");
 
-
+//Create a global object called users which will be used to store and access the users in the app. 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
 
 app.use(express.urlencoded({ extended: true }));
 function generateRandomString() {
@@ -57,18 +69,28 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = { 
+    urls: urlDatabase, 
+    username: users[req.cookies.username] || null 
+  };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    user: users[req.cookies.username] || null
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  const templateVars = { id: id, longURL: longURL };
+  const templateVars = { 
+    id, 
+    longURL,
+    users: users[req.cookies.username] || null 
+  };
   res.render("urls_show", templateVars);
   
 });
@@ -81,7 +103,18 @@ app.get("/u/:id", (req, res) => {
 
 //Create a GET /register endpoint, which returns the template you just created.
 app.get("/register", (req, res) => {
-  res.render("register");
+  const templateVars = {
+    user: users[req.cookies.username] || null
+  };
+  res.render("register", templateVars);
+})
+
+// Update GET /login endpoint and pass the entire user object to the template
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies.username] || null
+  };
+  res.render("login", templateVars);
 })
 
 app.post("/urls", (req, res) => {
@@ -157,3 +190,33 @@ app.post("/logout", (req, res) => {
   //redirect the client back to urls index page
   res.redirect("/urls");
 })
+
+//Create a POST /register endpoint.
+app.post("/register", (req, res) => {
+  //to extract email and password from request body
+  const {email, password} = req.body;
+
+  //to see if email is already registered
+  for (const userId in users) {
+    if (users[userId].email === email) {
+      res.status(400).send("Account exists already.")
+      return;
+    }
+  }
+  //to generate a six-character unique id for our new user
+  const userId = generateRandomString();
+
+
+  //create an object for new user
+  const newUser = {
+    id: userId,
+    email, 
+    password
+  }
+
+  //to store new user information into the users object
+  users[userId] = newUser;
+
+  //upon succesful registration, redirect user to login page
+  res.redirect("/login");
+}) 
