@@ -198,7 +198,8 @@ app.post("/register", (req, res) => {
 
   //for invalid email/password and to make sure email has proper format
   const emailFormatRegex = /^\S+@\S+\.\S+$/;
-  if (!email || !password || !emailFormatRegex) {
+  //.test(email) is a method call on regex object and is used to test if a string matches the regex pattern
+  if (!email || !password || !emailFormatRegex.test(email)) {
     return res.status(400).send("Invalid email or password.");
   } 
   
