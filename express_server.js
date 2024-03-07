@@ -175,6 +175,16 @@ app.post("/urls/:id", (req, res) => {
 //Add an endpoint to handle a POST to /login in your Express server.
 app.post("/login", (req, res) => {
   const username = req.body.username;
+  //to extract email and password from request body
+  const {email, password} = req.body;
+
+  //for invalid email/password and to make sure email has proper format
+  const emailFormatRegex = /^\S+@\S+\.\S+$/;
+  //.test(email) is a method call on regex object and is used to test if a string matches the regex pattern
+  if (!email || !password || !emailFormatRegex.test(email) || !username) {
+    return res.status(400).send("Invalid username, email or password.");
+  } 
+  
 
   //set username cookie with a value submitted in the request body
   res.cookie("username", username);
