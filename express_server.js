@@ -68,17 +68,27 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+function setTemplateVars(user_id = null) {
+  if (user_id) {
+    return {user: users[user_id]};
+  } else {
+  return {user: null};
+  }
+}
+
 app.get("/urls", (req, res) => {
   const templateVars = { 
     urls: urlDatabase, 
-    user: users[req.cookies.user_id] || null 
+    //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
+    ...setTemplateVars(req.cookies.user_id)
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.user_id] || null
+  //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
+  ...setTemplateVars(req.cookies.user_id)  
   };
   res.render("urls_new", templateVars);
 });
@@ -89,7 +99,8 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { 
     id, 
     longURL,
-    users: users[req.cookies.user_id] || null 
+    //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
+    ...setTemplateVars(req.cookies.user_id)
   };
   res.render("urls_show", templateVars);
   
@@ -104,7 +115,9 @@ app.get("/u/:id", (req, res) => {
 //Create a GET /register endpoint, which returns the template you just created.
 app.get("/register", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.user_id] || null
+    //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
+    ...setTemplateVars(req.cookies.user_id)
+    
   };
   res.render("register", templateVars);
 })
@@ -112,7 +125,8 @@ app.get("/register", (req, res) => {
 // Update GET /login endpoint and pass the entire user object to the template
 app.get("/login", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.user_id] || null
+    //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
+    ...setTemplateVars(req.cookies.user_id)
   };
   res.render("login", templateVars);
 })
