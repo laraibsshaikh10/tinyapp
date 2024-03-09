@@ -33,12 +33,12 @@ function generateRandomString() {
 // console.log(generateRandomString());
 //using it as middleware
 app.use(cookieParser());
-//middleware to pass username to all views
-//Pass in the username to all views that include the _header.ejs partial and modify the _header.ejs partial to display the passed-in username next to the form.
+//middleware to pass user_id to all views
+//Pass in the user_id to all views that include the _header.ejs partial and modify the _header.ejs partial to display the passed-in user_id next to the form.
 app.use((req, res, next) => {
-  //checks if request contains a cookie called username
-  //if cookie exists, it assigns username cookie to res.locals.username otherwise assigns it a null value
-  res.locals.username = req.cookies.username || null;
+  //checks if request contains a cookie called user_id
+  //if cookie exists, it assigns user_id cookie to res.locals.user_id otherwise assigns it a null value
+  res.locals.user_id = req.cookies.user_id || null;
   //next is a callback function to call on the next middleware function
   next();
 })
@@ -71,14 +71,14 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { 
     urls: urlDatabase, 
-    username: users[req.cookies.username] || null 
+    user: users[req.cookies.user_id] || null 
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.username] || null
+    user: users[req.cookies.user_id] || null
   };
   res.render("urls_new", templateVars);
 });
@@ -89,7 +89,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { 
     id, 
     longURL,
-    users: users[req.cookies.username] || null 
+    users: users[req.cookies.user_id] || null 
   };
   res.render("urls_show", templateVars);
   
@@ -104,7 +104,7 @@ app.get("/u/:id", (req, res) => {
 //Create a GET /register endpoint, which returns the template you just created.
 app.get("/register", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.username] || null
+    user: users[req.cookies.user_id] || null
   };
   res.render("register", templateVars);
 })
@@ -112,7 +112,7 @@ app.get("/register", (req, res) => {
 // Update GET /login endpoint and pass the entire user object to the template
 app.get("/login", (req, res) => {
   const templateVars = {
-    user: users[req.cookies.username] || null
+    user: users[req.cookies.user_id] || null
   };
   res.render("login", templateVars);
 })
@@ -174,31 +174,33 @@ app.post("/urls/:id", (req, res) => {
 
 //Add an endpoint to handle a POST to /login in your Express server.
 app.post("/login", (req, res) => {
-  const username = req.body.username;
   //to extract email and password from request body
   const {email, password} = req.body;
 
-  //for invalid email/password and to make sure email has proper format
-  const emailFormatRegex = /^\S+@\S+\.\S+$/;
-  //.test(email) is a method call on regex object and is used to test if a string matches the regex pattern
-  if (!email || !password || !emailFormatRegex.test(email) || !username) {
-    return res.status(400).send("Invalid username, email or password.");
+  //use email to find users
+  // Update the POST /login endpoint to look up the email address (submitted via the login form) in the user object.
+  const user = Object.values(users).find(user => user.email === email);
+
+  //If a user with that e-mail cannot be found, return a response with a 403 status code.
+  //If a user with that e-mail address is located, compare the password given in the form with the existing user's password. If it does not match, return a response with a 403 status code.
+  if (!user || user.password !== password) {
+    return res.status(403).send("Invalid email or password.");
   } 
   
 
-  //set username cookie with a value submitted in the request body
-  res.cookie("username", username);
+  //If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /urls.
+  res.cookie("user_id", user.id);
 
   //redirect the client back to urls index page
   res.redirect("/urls");
 })
 
-//logout: Implement the /logout endpoint so that it clears the username cookie and redirects the user back to the /urls page.
+//logout: Implement the /logout endpoint so that it clears the user_id cookie and redirects the user back to the /urls page.
 app.post("/logout", (req, res) => {
-  //clear username cookie
-  res.clearCookie("username");
-  //redirect the client back to urls index page
-  res.redirect("/urls");
+  //clear user_id cookie
+  res.clearCookie("user_id");
+  //redirect the client back to the login page
+  res.redirect("/login");
 })
 
 //Create a POST /register endpoint.
@@ -214,12 +216,10 @@ app.post("/register", (req, res) => {
   } 
   
   //to see if email is already registered
-  for (const userId in users) {
-    if (users[userId].email === email) {
+  if (Object.values(users).find(user => user.email === email)) {
       return res.status(400).send("The user account already exists.");
-    
-    }
   }
+  
   //to generate a six-character unique id for our new user
   const userId = generateRandomString();
 
@@ -233,6 +233,9 @@ app.post("/register", (req, res) => {
 
   //to store new user information into the users object
   users[userId] = newUser;
+
+  //If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /urls.
+  res.cookie("user_id", userId);
 
   //upon succesful registration, redirect user to login page
   res.redirect("/login");
