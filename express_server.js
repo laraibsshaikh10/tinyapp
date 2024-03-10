@@ -127,8 +127,19 @@ app.get("/urls/:id", (req, res) => {
 });
 
 // Redirect any request to "/u/:id" to its longURL
+//Since these short URLs are meant to be shared with anyone, make sure that anyone can still visit the short URLs and get properly redirected, whether they are logged in or not. Unlike the previous examples in this exercise, /u/:id should not be protected based on logged in status.
 app.get("/u/:id", (req, res) => {
-  res.redirect(longURL);
+  //retrieve shortURL id from request paramenters
+  const shortURL = req.params.id;
+  //use shortURL id to retrieve corresponding longURL from urlDatabase
+  const longURL = urlDatabase[shortURL];
+  //to check if corresponding longURL exists
+  if (longURL) {
+    res.redirect(longURL);
+  } else {
+    //if shortURL does not exist in urlDatabase, send a 404 message
+    res.status(404).send("The short URL provided is not found.") //Status code: 404 not found
+  }
 });
 
 //Create a GET /register endpoint
