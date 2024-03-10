@@ -18,6 +18,7 @@ const users = {
 };
 
 app.use(express.urlencoded({ extended: true }));
+
 function generateRandomString() {
   let randomString = "";
   //to select from a list of characters
@@ -41,8 +42,7 @@ app.use((req, res, next) => {
   res.locals.user_id = req.cookies.user_id || null;
   //next is a callback function to call on the next middleware function
   next();
-})
-
+});
 
 //Set ejs as the view engine.
 app.set("view engine", "ejs");
@@ -85,12 +85,32 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
+//Modify your app so that only registered and logged in users can create new tiny URLs.
+function authentication(req, res, next) {
+  const userId = req.cookies.user_id;
+  //to check if a user is authenticated
+  if (userId && users[userId]) {
+    //if logged in, move to the next middleware or route handler
+    next();
+  } else {
+    //user not authenticated, redirect to login
+    res.redirect("/login");
+  }
+}
+
+//apply autheticationRequired middleware to GET the route: /urls/new
+app.get("/urls/new", authentication, (req, res) => {
   const templateVars = {
   //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
   ...setTemplateVars(req.cookies.user_id)  
   };
   res.render("urls_new", templateVars);
+});
+
+//redirect GET /urls/new to GET /login
+app.get("/urls/new", (req, res) => {
+  //redirect to login if user is not autheticated
+  res.redirect("/login");
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -108,32 +128,41 @@ app.get("/urls/:id", (req, res) => {
 
 // Redirect any request to "/u/:id" to its longURL
 app.get("/u/:id", (req, res) => {
-  // const longURL = ...
   res.redirect(longURL);
 });
 
-//Create a GET /register endpoint, which returns the template you just created.
+//Create a GET /register endpoint
 app.get("/register", (req, res) => {
-  const templateVars = {
-    //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
-    ...setTemplateVars(req.cookies.user_id)
-    
-  };
-  res.render("register", templateVars);
-})
+  //  //To check if the user is already logged in
+  if (req.cookies.user_id && users[req.cookies.user_id]) {
+    //If the user is logged in, GET /login should redirect to GET /urls
+    res.redirect("/urls");
+  } else {
+    //if user is not logged in, render the login page
+    res.render("register", {user: null});
+  }
+});
 
-// Update GET /login endpoint and pass the entire user object to the template
+// Update GET /login endpoint 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
-    ...setTemplateVars(req.cookies.user_id)
-  };
-  res.render("login", templateVars);
-})
+  //To check if the user is already logged in
+  if (req.cookies.user_id && users[req.cookies.user_id]) {
+    //If the user is logged in, GET /login should redirect to GET /urls
+    res.redirect("/urls");
+  } else {
+    //if user is not logged in, render the login page
+    res.render("login", {user: null});
+  }
+});
 
 app.post("/urls", (req, res) => {
-  // console.log(req.body); // Log the POST request body to the console
-  // res.send("Ok"); // Respond with 'Ok' (we will replace this)
+
+  //If the user is not logged in, POST /urls should respond with an HTML message that tells the user why they cannot shorten URLs. Double check that in this case the URL is not added to the database.
+  const userId = req.cookies.user_id; //to check if user is logged in
+  //not logged in, respond with HTML message
+  if(!userId || !users[userId]) {
+    return res.status(403).send("<h1> Please log in to shorten a URL </h1>");
+  }
   
   //Update your express server so that the id-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
   
@@ -254,3 +283,4 @@ app.post("/register", (req, res) => {
   //upon succesful registration, redirect user to login page
   res.redirect("/login");
 }) 
+
