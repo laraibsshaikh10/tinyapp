@@ -24,7 +24,11 @@ const users = {
   },
 };
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
+
+//In your server file, add the following line after the urlencoded middleware.
+app.use(express.json());
+
 
 function generateRandomString() {
   let randomString = "";
