@@ -139,7 +139,7 @@ function urlForUser(id) {
 
 
 app.get("/urls/:id", (req, res) => {
-  const userId = req.params.user_id;
+  const userId = req.cookies.user_id;
   const id = req.params.id;
 
   //check if user is not logged in, return error with status code 401
@@ -174,15 +174,15 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:id", (req, res) => {
   //retrieve shortURL id from request paramenters
   const shortURL = req.params.id;
+  //check if shortURL is present in the urlDatabase
+  if (!urlDatabase[shortURL]) {
+     //if shortURL does not exist in urlDatabase, send a 404 message
+     res.status(404).send("The short URL provided is not found.") //Status code: 404 not found
+  }
   //use shortURL id to retrieve corresponding longURL from urlDatabase
   const longURL = urlDatabase[shortURL].longURL;
   //to check if corresponding longURL exists
-  if (longURL) {
-    res.redirect(longURL);
-  } else {
-    //if shortURL does not exist in urlDatabase, send a 404 message
-    res.status(404).send("The short URL provided is not found.") //Status code: 404 not found
-  }
+  res.redirect(longURL);
 });
 
 //Create a GET /register endpoint
@@ -227,7 +227,10 @@ app.post("/urls", (req, res) => {
 
   //to add the id-longURL pair to urlDatabase object
   //set value as longURL
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = {
+    longURL, 
+    userID: userId
+  };
 
   //Update your express server so that the id-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
   //to redirect the client to the page with details regarding the new URL
