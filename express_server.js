@@ -2,6 +2,11 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require("cookie-parser");
+//When registering a user, instead of saving the password directly, we can use bcrypt.hashSync and save the resulting hash of the password like this:
+const bcrypt = require("bcryptjs");
+const password = "purple-monkey-dinosaur"; // found in the req.body object
+const hashedPassword = bcrypt.hashSync(password, 10);
+
 
 //Create a global object called users which will be used to store and access the users in the app. 
 const users = {
@@ -331,6 +336,9 @@ app.post("/register", (req, res) => {
   if (Object.values(users).find(user => user.email === email)) {
       return res.status(400).send("The user account already exists.");
   }
+
+  //use bcrypt to hash the password
+  const hashedPassword = bcrypt.hashSync(password, 10); 
   
   //to generate a six-character unique id for our new user
   const userId = generateRandomString();
@@ -339,9 +347,9 @@ app.post("/register", (req, res) => {
   //create an object for new user
   const newUser = {
     id: userId,
-    email, 
-    password
-  }
+    password: hashedPassword,
+    email 
+  };
 
   //to store new user information into the users object
   users[userId] = newUser;
@@ -353,3 +361,12 @@ app.post("/register", (req, res) => {
   res.redirect("/login");
 }); 
 
+
+
+// Test
+// Compare a plain text password with the hashed password
+const isPasswordCorrect1 = bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
+const isPasswordCorrect2 = bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false
+
+console.log(isPasswordCorrect1); // Output: true
+console.log(isPasswordCorrect2); // Output: false
