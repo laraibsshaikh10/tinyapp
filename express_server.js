@@ -48,8 +48,14 @@ app.use((req, res, next) => {
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  }
 };
 
 app.get("/", (req, res) => {
@@ -77,12 +83,19 @@ function setTemplateVars(user_id = null) {
 }
 
 app.get("/urls", (req, res) => {
-  const templateVars = { 
-    urls: urlDatabase, 
-    //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
-    ...setTemplateVars(req.cookies.user_id)
-  };
-  res.render("urls_index", templateVars);
+  const userId = req.cookies.user_id;
+  //if user is not logged in, render error message
+  if(!userId || !users[userId]) {
+    res.status(401).send("<h1> Please log in to shorten URLs</h1>");
+  } else {
+  //if user is logged in, render URLs page
+    const templateVars = { 
+      urls: urlDatabase, 
+      //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
+      ...setTemplateVars(req.cookies.user_id)
+    };
+    res.render("urls_index", templateVars);
+  }
 });
 
 //Modify your app so that only registered and logged in users can create new tiny URLs.
@@ -113,9 +126,39 @@ app.get("/urls/new", (req, res) => {
   res.redirect("/login");
 });
 
+//Create a function named urlsForUser(id) which returns the URLs where the userID is equal to the id of the currently logged-in user.
+function urlForUser(id) {
+  const userURL = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userURL[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userURL;
+}
+
+
 app.get("/urls/:id", (req, res) => {
+  const userId = req.params.user_id;
   const id = req.params.id;
-  const longURL = urlDatabase[id];
+
+  //check if user is not logged in, return error with status code 401
+  if (!userId || !users[userId]) {
+    return res.status(401).send("Please log in to view the shortened URL.");
+  }
+  //to check if url is present in the database
+  const url = urlDatabase[id];
+  //if url not found, return error 404, not found
+  if (!url) {
+    return res.status(404).send("The requested url not found.");
+  }
+
+  //to check if url belongs to a logged in user
+  if(url.userID !== userId) {
+    return res.status(403).send("Please log in to view the requested URL.");
+  }
+
+  //render page with URL details
   const templateVars = { 
     id, 
     longURL,
@@ -132,7 +175,7 @@ app.get("/u/:id", (req, res) => {
   //retrieve shortURL id from request paramenters
   const shortURL = req.params.id;
   //use shortURL id to retrieve corresponding longURL from urlDatabase
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   //to check if corresponding longURL exists
   if (longURL) {
     res.redirect(longURL);
@@ -193,38 +236,50 @@ app.post("/urls", (req, res) => {
 
 //Add a POST route that removes a URL resource: POST /urls/:id/delete
 app.post("/urls/:id/delete", (req, res) => {
+  const userId = req.cookies.user_id;
   //to get shortened url id from route parameter
   const id = req.params.id;
-  //to see if url is already present in the database
-  if (urlDatabase[id]) {
+  //to see if url is not logged in
+  if (!userId || !users[userId]) {
+    return res.status(401).send("Please log in to delete a URL.");
+  //check if id provided exists in urlDatabase
+  } else if (!urlDatabase[id]) {
+    return res.status(404).send("The requested URL is not found in the database.");
+    //to check if a user is logged in and have the permission
+  } else if (urlDatabase[id].userID !== userId) {
+    return res.status(403).send("Please log in to delete a URL.");
+  } else {
     //delete that url from the database
     delete urlDatabase[id];
-    //redirect to the urls index page
+    //redirect to urls index page
     res.redirect("/urls");
-  } else {
-    //if url is not in the database, send a 400 error
-    res.status(400).send("URL does not exist");
   }
 });
 
 //Add a POST route that updates a URL resource; POST /urls/:id and have it update the value of your stored long URL based on the new value in req.body. Finally, redirect the client back to /urls.
 app.post("/urls/:id", (req, res) => {
+  const userId = req.cookies.user_id;
   //to get shortened url id from route parameter
   const shortURL = req.params.id;
   //to get updated long url from request body
-  const updatedURL = req.body.updatedURL;
-  //to see if url is already present in the database
-  if (urlDatabase[shortURL]) {
+  const updatedURL = req.body.longURL;
+  //to check if a user is logged in or not
+  if (!userId || !users[userId]) {
+    return res.status(401).send("Please log in to make changes to URLs.");
+    //check if id exists in the urlDatabase
+  } else if (!urlDatabase[shortURL]) {
+    return res.status(404).send("The requested URL not found.");
+    //authentication error
+  } else if (urlDatabase[shortURL].userID !== userId) {
+    return res.status(403).send("Please acquire permission to update this URL");
+  } else {
+    //to see if url is already present in the database
     //updated stored long url
-    urlDatabase[shortURL] = updatedURL;
+    urlDatabase[shortURL].longURL = updatedURL;
     //redirect the client to the urls index page
     res.redirect("/urls");
-  } else {
-    //if shortened url is not in the database, send a 400 error
-    res.status(400).send("URL does not exist");
   }
 });
-
 
 //Add an endpoint to handle a POST to /login in your Express server.
 app.post("/login", (req, res) => {
@@ -293,5 +348,5 @@ app.post("/register", (req, res) => {
 
   //upon succesful registration, redirect user to login page
   res.redirect("/login");
-}) 
+}); 
 
