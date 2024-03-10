@@ -1,7 +1,9 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session')
+
+// const cookieParser = require("cookie-parser");
 //When registering a user, instead of saving the password directly, we can use bcrypt.hashSync and save the resulting hash of the password like this:
 const bcrypt = require("bcryptjs");
 const password = "purple-monkey-dinosaur"; // found in the req.body object
@@ -38,13 +40,16 @@ function generateRandomString() {
 
 // console.log(generateRandomString());
 //using it as middleware
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ["key1", "key2"]
+}));
 //middleware to pass user_id to all views
 //Pass in the user_id to all views that include the _header.ejs partial and modify the _header.ejs partial to display the passed-in user_id next to the form.
 app.use((req, res, next) => {
   //checks if request contains a cookie called user_id
   //if cookie exists, it assigns user_id cookie to res.locals.user_id otherwise assigns it a null value
-  res.locals.user_id = req.cookies.user_id || null;
+  res.locals.user_id = req.session.user_id || null;
   //next is a callback function to call on the next middleware function
   next();
 });
@@ -88,7 +93,7 @@ function setTemplateVars(user_id = null) {
 }
 
 app.get("/urls", (req, res) => {
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   //if user is not logged in, render error message
   if(!userId || !users[userId]) {
     res.status(401).send("<h1> Please log in to shorten URLs</h1>");
@@ -97,7 +102,7 @@ app.get("/urls", (req, res) => {
     const templateVars = { 
       urls: urlDatabase, 
       //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
-      ...setTemplateVars(req.cookies.user_id)
+      ...setTemplateVars(req.session.user_id)
     };
     res.render("urls_index", templateVars);
   }
@@ -105,7 +110,7 @@ app.get("/urls", (req, res) => {
 
 //Modify your app so that only registered and logged in users can create new tiny URLs.
 function authentication(req, res, next) {
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   //to check if a user is authenticated
   if (userId && users[userId]) {
     //if logged in, move to the next middleware or route handler
@@ -120,7 +125,7 @@ function authentication(req, res, next) {
 app.get("/urls/new", authentication, (req, res) => {
   const templateVars = {
   //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
-  ...setTemplateVars(req.cookies.user_id)  
+  ...setTemplateVars(req.session.user_id)  
   };
   res.render("urls_new", templateVars);
 });
@@ -144,7 +149,7 @@ function urlForUser(id) {
 
 
 app.get("/urls/:id", (req, res) => {
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   const id = req.params.id;
 
   //check if user is not logged in, return error with status code 401
@@ -168,7 +173,7 @@ app.get("/urls/:id", (req, res) => {
     id, 
     longURL,
     //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
-    ...setTemplateVars(req.cookies.user_id)
+    ...setTemplateVars(req.session.user_id)
   };
   res.render("urls_show", templateVars);
   
@@ -193,7 +198,7 @@ app.get("/u/:id", (req, res) => {
 //Create a GET /register endpoint
 app.get("/register", (req, res) => {
   //  //To check if the user is already logged in
-  if (req.cookies.user_id && users[req.cookies.user_id]) {
+  if (req.session.user_id && users[req.session.user_id]) {
     //If the user is logged in, GET /login should redirect to GET /urls
     res.redirect("/urls");
   } else {
@@ -205,7 +210,7 @@ app.get("/register", (req, res) => {
 // Update GET /login endpoint 
 app.get("/login", (req, res) => {
   //To check if the user is already logged in
-  if (req.cookies.user_id && users[req.cookies.user_id]) {
+  if (req.session.user_id && users[req.session.user_id]) {
     //If the user is logged in, GET /login should redirect to GET /urls
     res.redirect("/urls");
   } else {
@@ -217,7 +222,7 @@ app.get("/login", (req, res) => {
 app.post("/urls", (req, res) => {
 
   //If the user is not logged in, POST /urls should respond with an HTML message that tells the user why they cannot shorten URLs. Double check that in this case the URL is not added to the database.
-  const userId = req.cookies.user_id; //to check if user is logged in
+  const userId = req.session.user_id; //to check if user is logged in
   //not logged in, respond with HTML message
   if(!userId || !users[userId]) {
     return res.status(403).send("<h1> Please log in to shorten a URL </h1>");
@@ -244,7 +249,7 @@ app.post("/urls", (req, res) => {
 
 //Add a POST route that removes a URL resource: POST /urls/:id/delete
 app.post("/urls/:id/delete", (req, res) => {
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   //to get shortened url id from route parameter
   const id = req.params.id;
   //to see if url is not logged in
@@ -266,7 +271,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //Add a POST route that updates a URL resource; POST /urls/:id and have it update the value of your stored long URL based on the new value in req.body. Finally, redirect the client back to /urls.
 app.post("/urls/:id", (req, res) => {
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   //to get shortened url id from route parameter
   const shortURL = req.params.id;
   //to get updated long url from request body
