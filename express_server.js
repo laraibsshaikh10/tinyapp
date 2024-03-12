@@ -73,7 +73,8 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  //set the root url to redirect user to login page as default home page
+  res.redirect("/login");
 });
 
 app.listen(PORT, () => {
@@ -218,7 +219,7 @@ app.get("/login", (req, res) => {
     //If the user is logged in, GET /login should redirect to GET /urls
     res.redirect("/urls");
   } else {
-    //if user is not logged in, render the login page
+    //if user is not logged in, render the login page with user_id as null
     res.render("login", {user: null});
   }
 });
@@ -315,7 +316,7 @@ app.post("/login", (req, res) => {
   
 
   //If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /urls.
-  res.session.user_id = user.id;
+  req.session.user_id = user.id;
 
   //redirect the client back to urls index page
   res.redirect("/urls");
@@ -324,7 +325,7 @@ app.post("/login", (req, res) => {
 //logout: Implement the /logout endpoint so that it clears the user_id cookie and redirects the user back to the /urls page.
 app.post("/logout", (req, res) => {
   //clear user_id cookie
-  res.session.user_id = null;
+  req.session.user_id = null;
   //redirect the client back to the login page
   res.redirect("/login");
 })
@@ -364,10 +365,10 @@ app.post("/register", (req, res) => {
   users[userId] = newUser;
 
   //If both checks pass, set the user_id cookie with the matching user's random ID, then redirect to /urls.
-  res.session.user_id = userId;
+  req.session.user_id = userId;
 
-  //upon succesful registration, redirect user to login page
-  res.redirect("/login");
+  //upon succesful registration, redirect user to urls page
+  res.redirect("/urls");
 }); 
 
 

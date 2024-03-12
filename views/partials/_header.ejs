@@ -20,8 +20,8 @@
       </div>
     </div>
     <!--to display user_id once logged in-->
-    <% if (user_id) { %>
-      <span>Logged in as:, <%= users[user_id].email %></span>
+    <% if (user) { %>
+      <span>Logged in as: <%= user.email %></span>
       <form method="POST" class = "logout-form" action= "/logout">
         <button type="submit" class="logout-button">Logout</button>
       </form>
