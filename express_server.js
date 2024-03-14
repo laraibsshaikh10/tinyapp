@@ -2,12 +2,12 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieSession = require('cookie-session');
-const {getUserByEmail} = require("./helpers");
+const {generateRandomString, getUserByEmail} = require("./helpers");
 
 //When registering a user, instead of saving the password directly, we can use bcrypt.hashSync and save the resulting hash of the password like this:
 const bcrypt = require("bcryptjs");
 const password = "purple-monkey-dinosaur"; // found in the req.body object
-const hashedPassword = bcrypt.hashSync(password, 10);
+// const hashedPassword = bcrypt.hashSync(password, 10);
 
 
 //Create a global object called users which will be used to store and access the users in the app. 
@@ -30,17 +30,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 
-function generateRandomString() {
-  let randomString = "";
-  //to select from a list of characters
-  const stringCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  //to ensure the generated string is 6 characters long
-  for (let i = 0; i < 6; i++) {
-    const randomIndex =  Math.floor(Math.random() * stringCharacters.length);
-    randomString += stringCharacters[randomIndex];
-    }
-    return randomString;
-}
 
 // console.log(generateRandomString());
 //using it as middleware
@@ -77,9 +66,6 @@ app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -89,6 +75,7 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+
 function setTemplateVars(user_id = null) {
   if (user_id) {
     return {user: users[user_id]};
@@ -96,6 +83,7 @@ function setTemplateVars(user_id = null) {
   return {user: null};
   }
 }
+
 
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
@@ -111,6 +99,7 @@ app.get("/urls", (req, res) => {
     };
     res.render("urls_index", templateVars);
   }
+  
 });
 
 //Modify your app so that only registered and logged in users can create new tiny URLs.
@@ -176,13 +165,17 @@ app.get("/urls/:id", (req, res) => {
   //render page with URL details
   const templateVars = { 
     id, 
-    longURL,
+    shortURL: id,
+    longURL: url.longURL,
     //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
     ...setTemplateVars(req.session.user_id)
   };
   res.render("urls_show", templateVars);
   
 });
+
+//to edit urls, create a get route
+app.get("/urls/")
 
 // Redirect any request to "/u/:id" to its longURL
 //Since these short URLs are meant to be shared with anyone, make sure that anyone can still visit the short URLs and get properly redirected, whether they are logged in or not. Unlike the previous examples in this exercise, /u/:id should not be protected based on logged in status.
@@ -231,6 +224,7 @@ app.post("/urls", (req, res) => {
   //not logged in, respond with HTML message
   if(!userId || !users[userId]) {
     return res.status(403).send("<h1> Please log in to shorten a URL </h1>");
+    
   }
   
   //Update your express server so that the id-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
@@ -372,11 +366,6 @@ app.post("/register", (req, res) => {
 }); 
 
 
-
-// Test
-// Compare a plain text password with the hashed password
-const isPasswordCorrect1 = bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
-const isPasswordCorrect2 = bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false
-
-console.log(isPasswordCorrect1); // Output: true
-console.log(isPasswordCorrect2); // Output: false
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
