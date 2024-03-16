@@ -84,6 +84,17 @@ function setTemplateVars(user_id = null) {
   }
 }
 
+//Create a function named urlsForUser(id) which returns the URLs where the userID is equal to the id of the currently logged-in user.
+function urlForUser(id) {
+  const userURL = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userURL[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userURL;
+}
+
 
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
@@ -92,18 +103,12 @@ app.get("/urls", (req, res) => {
     res.status(401).send("<h1> Please log in to shorten URLs</h1>");
   } else {
     //to filter urls based on the userId, only show urls created by the user
-    const userURL =  {};
-    for (const shortURL in urlDatabase) {
-      //if the userID in the urlDatabase matches the userId
-      if (urlDatabase[shortURL].userID === userId) {
-        //the value of userURL object will equal to the value of urlDatabase object
-        userURL[shortURL] = urlDatabase[shortURL];
-      }
-    }
+    
+    const userUrl = urlForUser(userId);
     //if user is logged in, render URLs page
     const templateVars = { 
       //only show urls created by the user
-      urls: userURL, 
+      urls: userUrl, 
       //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
       ...setTemplateVars(req.session.user_id)
     };
@@ -140,17 +145,6 @@ app.get("/urls/new", (req, res) => {
   res.redirect("/login");
 });
 
-//Create a function named urlsForUser(id) which returns the URLs where the userID is equal to the id of the currently logged-in user.
-function urlForUser(id) {
-  const userURL = {};
-  for (let shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === id) {
-      userURL[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return userURL;
-}
-
 
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.user_id;
@@ -183,7 +177,6 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
   
 });
-
 
 // Redirect any request to "/u/:id" to its longURL
 //Since these short URLs are meant to be shared with anyone, make sure that anyone can still visit the short URLs and get properly redirected, whether they are logged in or not. Unlike the previous examples in this exercise, /u/:id should not be protected based on logged in status.
