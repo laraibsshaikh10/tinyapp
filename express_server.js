@@ -109,6 +109,7 @@ app.get("/urls", (req, res) => {
     const templateVars = { 
       //only show urls created by the user
       urls: userUrl, 
+      id: req.params.id,
       //use the spread operator (...) to merge the templateVars object with the object returned by the setTemplateVars function
       ...setTemplateVars(req.session.user_id)
     };
@@ -138,13 +139,6 @@ app.get("/urls/new", authentication, (req, res) => {
   };
   res.render("urls_new", templateVars);
 });
-
-//redirect GET /urls/new to GET /login
-app.get("/urls/new", (req, res) => {
-  //redirect to login if user is not autheticated
-  res.redirect("/login");
-});
-
 
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.user_id;
@@ -324,7 +318,7 @@ app.post("/login", (req, res) => {
 //logout: Implement the /logout endpoint so that it clears the user_id cookie and redirects the user back to the /urls page.
 app.post("/logout", (req, res) => {
   //clear user_id cookie
-  req.session.user_id = null;
+  req.session = null;
   //redirect the client back to the login page
   res.redirect("/login");
 })

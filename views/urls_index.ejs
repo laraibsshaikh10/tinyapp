@@ -47,9 +47,13 @@
                   <button type="submit" class = "delete-button">Delete</button>
                 </form>
               </td>
-              <td> <!--Add an Edit column to the table on the urls_index page-->
-                <a href="/urls/<%= id %>/edit" class= "btn btn-primary">Edit</a>  
-              </td>
+              <td> 
+              <!-- Add an Edit column to the table on the urls_index page -->
+            
+                <form method="GET" action="/urls/<%= id%>">
+                  <button type="submit" class = "primary-button">Edit</button>
+                </form>
+              </td> 
             </tr>
           <% } %>
         </tbody>
